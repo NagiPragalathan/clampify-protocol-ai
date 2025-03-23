@@ -632,7 +632,7 @@ const ChatBot = () => {
     
     try {
       // Include LLM model in the API call
-      const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(lastUserMessage)}&conversation_id=${conversationId}&regenerate=true&character=${character}&llm=${llm}`);
+      const response = await fetch(`https://clampify-protocol-ai-z9vu.vercel.app/chat?query=${encodeURIComponent(lastUserMessage)}&conversation_id=${conversationId}&regenerate=true&character=${character}&llm=${llm}`);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let completeResponse = "";

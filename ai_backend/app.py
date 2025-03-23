@@ -1,7 +1,8 @@
 from flask import Flask, request, Response
 from flask_cors import CORS
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-import uuid
+import random
+import string
 from LLM.Nilai import NillionLLM, OGLLM
 from helpers import get_web3_prompt
 from api_handler import create_coin, buy_coin
@@ -9,6 +10,11 @@ app = Flask(__name__)
 CORS(app)
 
 conversation_history = {}
+
+# Function to generate a random ID string
+def generate_random_id(length=20):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
 
 @app.route('/chat', methods=['GET'])
 def chat():
@@ -35,7 +41,7 @@ def chat():
         return Response("Error: Query parameter is required", status=400, content_type="text/plain")
 
     if not conversation_id:
-        conversation_id = str(uuid.uuid4())
+        conversation_id = generate_random_id()
 
     if conversation_id not in conversation_history:
         # Use our new web3 prompt function instead of the previous one
