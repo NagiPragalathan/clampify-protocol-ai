@@ -5,6 +5,121 @@ import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { v4 as uuidv4 } from 'uuid';
 import { createWorker } from 'tesseract.js';
 
+// Add this right after the imports at the top
+
+// Add this before the ChatBot component
+const typingIndicatorStyles = `
+@keyframes blink {
+  0% { transform: scale(1); opacity: 0.4; }
+  20% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+
+@keyframes pulse-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes progress-indeterminate {
+  0% { 
+    transform: translateX(-100%);
+    width: 40%; 
+  }
+  100% { 
+    transform: translateX(200%);
+    width: 40%; 
+  }
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes thinking-dots {
+  0%, 20% { content: '.'; }
+  40%, 60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.typing-indicator .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  background-color: #6366f1;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+.typing-indicator .dot:nth-child(1) {
+  animation: blink 1.4s infinite 0s;
+}
+
+.typing-indicator .dot:nth-child(2) {
+  animation: blink 1.4s infinite 0.2s;
+}
+
+.typing-indicator .dot:nth-child(3) {
+  animation: blink 1.4s infinite 0.4s;
+}
+
+.indeterminate-progress-bar {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.indeterminate-progress-bar::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, 
+    rgba(99, 102, 241, 0.1), 
+    rgba(99, 102, 241, 1), 
+    rgba(99, 102, 241, 0.1));
+  border-radius: 9999px;
+  animation: progress-indeterminate 1.5s infinite ease-in-out;
+}
+
+.indeterminate-progress-bar::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 20%;
+  background: linear-gradient(90deg, 
+    rgba(129, 140, 248, 0), 
+    rgba(129, 140, 248, 0.8), 
+    rgba(129, 140, 248, 0));
+  border-radius: 9999px;
+  animation: progress-indeterminate 2.3s infinite ease-in-out 0.5s;
+  opacity: 0.7;
+}
+
+.thinking-text::after {
+  content: '...';
+  display: inline-block;
+  animation: thinking-dots 1.5s infinite;
+  width: 1.2em;
+  text-align: left;
+}
+
+.shimmer-effect {
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+`;
+
+// Add this right after the ChatBot function starts
 const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -26,6 +141,7 @@ const ChatBot = () => {
   const [isCharacterMenuOpen, setIsCharacterMenuOpen] = useState(false);
   const [llm, setLlm] = useState("nilai");
   const [isLlmMenuOpen, setIsLlmMenuOpen] = useState(false);
+  const [responseProgress, setResponseProgress] = useState(0);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const tesseractWorker = useRef(null);
@@ -52,8 +168,8 @@ const ChatBot = () => {
 
   // Define available LLM models with correct IDs
   const llmModels = [
-    { id: "0g", name: "0G", description: "Default language model" },
-    { id: "nilai", name: "Nilai", description: "Alternative language model" },
+    { id: "nilai", name: "Nilai", description: "Primary language model" },
+    { id: "0g", name: "0G", description: "Alternative language model" },
   ];
 
   // Close character menu when clicking outside
@@ -498,6 +614,7 @@ const ChatBot = () => {
     }
   };
 
+  // Modified progress interval logic for both regenerateResponse and handleSendMessage functions
   const regenerateResponse = async () => {
     if (isLoading) return;
     
@@ -507,6 +624,11 @@ const ChatBot = () => {
     
     setIsLoading(true);
     setStreamingText("");
+    setResponseProgress(0);
+    
+    // Progressive animation variables
+    let progressInterval;
+    let artificialProgress = 0;
     
     try {
       // Include LLM model in the API call
@@ -514,14 +636,51 @@ const ChatBot = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let completeResponse = "";
+      let totalBytes = 0;
+      let startTime = Date.now();
+
+      // Create improved artificial progress animation
+      progressInterval = setInterval(() => {
+        // Calculate a smooth progression curve that slows down as it approaches 95%
+        if (totalBytes === 0) {
+          // Start with small increments that get smaller over time
+          const elapsedSeconds = (Date.now() - startTime) / 1000;
+          
+          if (elapsedSeconds > 1) {
+            // Begin progress after 1 second
+            const remainingPercentage = 95 - artificialProgress;
+            // Smaller increments as we go higher
+            const increment = Math.max(0.2, remainingPercentage / 100);
+            
+            artificialProgress += increment;
+            artificialProgress = Math.min(artificialProgress, 95);
+            setResponseProgress(artificialProgress);
+          }
+        }
+      }, 300);
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          clearInterval(progressInterval);
+          setResponseProgress(100);
+          break;
+        }
         
         const chunk = decoder.decode(value);
         completeResponse += chunk;
+        totalBytes += chunk.length;
         setStreamingText(completeResponse);
+        
+        // When real data starts coming in, switch to content-based progress
+        if (totalBytes > 0) {
+          // Calculate a more realistic progress percentage
+          const estimatedTotal = Math.max(5000, completeResponse.length * 1.2);
+          const calculatedProgress = Math.min((totalBytes / estimatedTotal) * 100, 95);
+          
+          // Ensure progress never decreases and always moves forward
+          setResponseProgress(prev => Math.max(prev, calculatedProgress));
+        }
       }
 
       // Update the last bot message in the messages array
@@ -543,7 +702,12 @@ const ChatBot = () => {
     } catch (error) {
       console.error('Error regenerating response:', error);
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
+      // Ensure a smooth transition to 0
+      setTimeout(() => {
+        setResponseProgress(0);
+      }, 500);
     }
   };
 
@@ -555,6 +719,7 @@ const ChatBot = () => {
 
     setIsLoading(true);
     setStreamingText("");
+    setResponseProgress(0);
     
     // Combine fileContent and text input if both exist
     let finalMessage = "";
@@ -618,20 +783,61 @@ const ChatBot = () => {
       localStorage.setItem('conversationId', newConversationId);
     }
 
+    // Progressive animation variables
+    let progressInterval;
+    let artificialProgress = 0;
+    
     try {
       // Include LLM model in the API call
       const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(finalMessage)}&conversation_id=${conversationId}&character=${character}&llm=${llm}`);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let completeResponse = "";
+      let totalBytes = 0;
+      let startTime = Date.now();
+      
+      // Create improved artificial progress animation
+      progressInterval = setInterval(() => {
+        // Calculate a smooth progression curve that slows down as it approaches 95%
+        if (totalBytes === 0) {
+          // Start with small increments that get smaller over time
+          const elapsedSeconds = (Date.now() - startTime) / 1000;
+          
+          if (elapsedSeconds > 1) {
+            // Begin progress after 1 second
+            const remainingPercentage = 95 - artificialProgress;
+            // Smaller increments as we go higher
+            const increment = Math.max(0.2, remainingPercentage / 100);
+            
+            artificialProgress += increment;
+            artificialProgress = Math.min(artificialProgress, 95);
+            setResponseProgress(artificialProgress);
+          }
+        }
+      }, 300);
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          clearInterval(progressInterval);
+          setResponseProgress(100);
+          break;
+        }
         
         const chunk = decoder.decode(value);
         completeResponse += chunk;
+        totalBytes += chunk.length;
         setStreamingText(completeResponse);
+        
+        // When real data starts coming in, switch to content-based progress
+        if (totalBytes > 0) {
+          // Calculate a more realistic progress percentage
+          const estimatedTotal = Math.max(5000, completeResponse.length * 1.2);
+          const calculatedProgress = Math.min((totalBytes / estimatedTotal) * 100, 95);
+          
+          // Ensure progress never decreases and always moves forward
+          setResponseProgress(prev => Math.max(prev, calculatedProgress));
+        }
       }
 
       // Add the complete message to messages array and clear streaming text
@@ -647,7 +853,12 @@ const ChatBot = () => {
       console.error('Error sending message:', error);
       setMessages(prev => [...prev, { text: 'Sorry, there was an error processing your message.', sender: 'bot' }]);
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
+      // Ensure a smooth transition to 0
+      setTimeout(() => {
+        setResponseProgress(0);
+      }, 500);
     }
 
     if (!isChatStarted) setIsChatStarted(true);
@@ -745,6 +956,18 @@ const ChatBot = () => {
   const getCurrentLlm = () => {
     return llmModels.find(m => m.id === llm) || llmModels[0];
   };
+
+  // Make sure to apply the styles in useEffect
+  useEffect(() => {
+    // Add the styles to the document
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = typingIndicatorStyles;
+    document.head.appendChild(styleElement);
+    
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-purple-50">
@@ -979,7 +1202,31 @@ const ChatBot = () => {
                     className="whitespace-pre-wrap leading-relaxed" 
                     dangerouslySetInnerHTML={{ __html: streamingText }}
                   />
-                  <span className="text-xs text-gray-500 mt-2 block">Typing...</span>
+                  <div className="flex items-center mt-3">
+                    {/* Enhanced typing indicator with progress */}
+                    <div className="typing-indicator">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
+                    <span className="text-xs text-gray-500 ml-2">
+                      {responseProgress > 5 
+                        ? `Generating response (${Math.round(responseProgress)}%)...` 
+                        : <span className="thinking-text">Thinking</span>}
+                    </span>
+                    
+                    {/* Progress bar */}
+                    <div className="w-full h-1 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                      {responseProgress <= 5 ? (
+                        <div className="indeterminate-progress-bar"></div>
+                      ) : (
+                        <div 
+                          className="h-full via-blue-500 transition-all duration-300 ease-out" 
+                          style={{ width: `${responseProgress}%` }}
+                        ></div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -1081,6 +1328,7 @@ const ChatBot = () => {
                 placeholder={
                   isListening ? "Listening..." : 
                   isProcessingFile ? `Processing file (${ocrProgress}%)...` : 
+                  isLoading ? "Waiting for response..." :
                   isOcrLoading ? "OCR engine is loading..." :
                   fileInfo ? "Add a message or send now..." :
                   !isOcrReady ? "OCR unavailable (simplified mode)" :
@@ -1097,9 +1345,34 @@ const ChatBot = () => {
                     : "bg-gray-300 cursor-not-allowed"
                 }`}
               >
-                <BsSendFill className="text-xl" />
+                {isLoading ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  <BsSendFill className="text-xl" />
+                )}
               </button>
             </div>
+            
+            {/* Show loading bar at bottom when processing */}
+            {isLoading && (
+              <div className="mt-2 w-full">
+                <div className="text-xs text-center text-gray-500 mb-1">
+                  {responseProgress > 5 
+                    ? `Generating response (${Math.round(responseProgress)}%)...` 
+                    : <span className="thinking-text shimmer-effect">Preparing your response</span>}
+                </div>
+                <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  {responseProgress <= 5 ? (
+                    <div className="indeterminate-progress-bar"></div>
+                  ) : (
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 transition-all duration-300 ease-out" 
+                      style={{ width: `${responseProgress}%` }}
+                    ></div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
