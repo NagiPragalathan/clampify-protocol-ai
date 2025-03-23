@@ -142,5 +142,13 @@ def chat():
     # Return a regular response instead of streaming
     return Response(response_text, content_type="text/plain")
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """
+    Health check endpoint to verify the service is up and running.
+    Returns a 200 OK response with a simple message.
+    """
+    return Response("OK", status=200, content_type="text/plain")
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
