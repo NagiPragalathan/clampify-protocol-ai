@@ -22,31 +22,38 @@ const ChatBot = () => {
   const [isOcrReady, setIsOcrReady] = useState(false);
   const [isOcrLoading, setIsOcrLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const [character, setCharacter] = useState("assistant");
+  const [character, setCharacter] = useState("blockchain-advisor");
   const [isCharacterMenuOpen, setIsCharacterMenuOpen] = useState(false);
+  const [llm, setLlm] = useState("nilai");
+  const [isLlmMenuOpen, setIsLlmMenuOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const tesseractWorker = useRef(null);
   const characterMenuRef = useRef(null);
+  const llmMenuRef = useRef(null);
 
   const recognition = useRef(null);
   const speechSynthesis = useRef(window.speechSynthesis);
   const utterance = useRef(null);
 
-  // Define available characters
+  // Define blockchain-focused characters instead of the previous ones
   const characters = [
-    { id: "assistant", name: "Assistant", description: "Helpful, balanced, and precise", emoji: "🧠" },
-    { id: "creative", name: "Creative", description: "Imaginative and artistic", emoji: "🎨" },
-    { id: "professional", name: "Professional", description: "Formal and business-oriented", emoji: "💼" },
-    { id: "friendly", name: "Friendly", description: "Warm, casual, and approachable", emoji: "😊" },
-    { id: "scientific", name: "Scientific", description: "Data-driven and analytical", emoji: "🔬" },
-    { id: "storyteller", name: "Storyteller", description: "Engaging and narrative-focused", emoji: "📚" },
-    // Medical characters 
-    { id: "doctor", name: "Doctor", description: "Medical professional with clinical knowledge", emoji: "👨‍⚕️" },
-    { id: "nutritionist", name: "Nutritionist", description: "Expert in diet and nutrition advice", emoji: "🥗" },
-    { id: "therapist", name: "Therapist", description: "Compassionate mental health professional", emoji: "🧘" },
-    { id: "nurse", name: "Nurse", description: "Caring healthcare practitioner", emoji: "💉" },
-    { id: "researcher", name: "Medical Researcher", description: "Focused on evidence-based information", emoji: "🔎" },
+    { id: "blockchain-advisor", name: "Blockchain Advisor", description: "Expert on blockchain fundamentals and technology", emoji: "⛓️" },
+    { id: "defi-specialist", name: "DeFi Specialist", description: "Expertise in decentralized finance protocols and strategies", emoji: "💸" },
+    { id: "nft-guru", name: "NFT Guru", description: "Specialist in NFT creation, markets, and trends", emoji: "🖼️" },
+    { id: "crypto-trader", name: "Crypto Trader", description: "Focused on cryptocurrency markets and trading concepts", emoji: "📈" },
+    { id: "smart-contract-dev", name: "Smart Contract Dev", description: "Expert in smart contract development and security", emoji: "📝" },
+    { id: "dao-strategist", name: "DAO Strategist", description: "Specialized in decentralized autonomous organizations", emoji: "🏛️" },
+    { id: "web3-architect", name: "Web3 Architect", description: "Focused on web3 infrastructure and development", emoji: "🌐" },
+    { id: "metaverse-guide", name: "Metaverse Guide", description: "Expert on virtual worlds and metaverse concepts", emoji: "🌌" },
+    { id: "token-economist", name: "Token Economist", description: "Specialist in tokenomics and crypto economics", emoji: "💰" },
+    { id: "blockchain-security", name: "Security Expert", description: "Focused on blockchain security and best practices", emoji: "🔒" },
+  ];
+
+  // Define available LLM models with correct IDs
+  const llmModels = [
+    { id: "0g", name: "0G", description: "Default language model" },
+    { id: "nilai", name: "Nilai", description: "Alternative language model" },
   ];
 
   // Close character menu when clicking outside
@@ -68,6 +75,28 @@ const ChatBot = () => {
     const storedCharacter = localStorage.getItem('aiCharacter');
     if (storedCharacter) {
       setCharacter(storedCharacter);
+    }
+  }, []);
+
+  // Close LLM menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (llmMenuRef.current && !llmMenuRef.current.contains(event.target)) {
+        setIsLlmMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Load LLM preference from localStorage
+  useEffect(() => {
+    const storedLlm = localStorage.getItem('aiLlm');
+    if (storedLlm) {
+      setLlm(storedLlm);
     }
   }, []);
 
@@ -480,7 +509,8 @@ const ChatBot = () => {
     setStreamingText("");
     
     try {
-      const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(lastUserMessage)}&conversation_id=${conversationId}&regenerate=true&character=${character}`);
+      // Include LLM model in the API call
+      const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(lastUserMessage)}&conversation_id=${conversationId}&regenerate=true&character=${character}&llm=${llm}`);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let completeResponse = "";
@@ -502,7 +532,8 @@ const ChatBot = () => {
           newMessages[lastBotIndex] = {
             text: completeResponse,
             sender: 'bot',
-            character: character
+            character: character,
+            llm: llm
           };
         }
         return newMessages;
@@ -588,8 +619,8 @@ const ChatBot = () => {
     }
 
     try {
-      // Include character in the API call
-      const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(finalMessage)}&conversation_id=${conversationId}&character=${character}`);
+      // Include LLM model in the API call
+      const response = await fetch(`http://127.0.0.1:5000/chat?query=${encodeURIComponent(finalMessage)}&conversation_id=${conversationId}&character=${character}&llm=${llm}`);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let completeResponse = "";
@@ -607,7 +638,8 @@ const ChatBot = () => {
       setMessages(prev => [...prev, { 
         text: completeResponse, 
         sender: 'bot',
-        character: character
+        character: character,
+        llm: llm
       }]);
       setStreamingText("");
       setLastBotMessage(completeResponse);
@@ -702,23 +734,76 @@ const ChatBot = () => {
     return characters.find(c => c.id === character) || characters[0];
   };
 
+  // Function to change LLM model
+  const changeLlm = (newLlm) => {
+    setLlm(newLlm);
+    localStorage.setItem('aiLlm', newLlm);
+    setIsLlmMenuOpen(false);
+  };
+
+  // Get current LLM model details
+  const getCurrentLlm = () => {
+    return llmModels.find(m => m.id === llm) || llmModels[0];
+  };
+
   return (
-    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <div className="w-full max-w-4xl mx-auto p-4 flex flex-col h-full">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl flex flex-col flex-1 overflow-hidden mt-10 border border-gray-100">
-          {/* Header with Character Selector */}
+          {/* Header with Character Selector and LLM Model Selector */}
           <div className="flex justify-between items-center p-4 border-b bg-white/50 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
                 <BsChatDots className="text-xl text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-800">Chat Assistant</h1>
-                <p className="text-xs text-gray-500">Ask me anything!</p>
+                <h1 className="text-xl font-semibold text-gray-800">Web3 Assistant</h1>
+                <p className="text-xs text-gray-500">Your blockchain knowledge companion</p>
               </div>
             </div>
             
             <div className="flex gap-2 items-center">
+              {/* LLM Model Selector Dropdown */}
+              <div className="relative" ref={llmMenuRef}>
+                <button 
+                  onClick={() => setIsLlmMenuOpen(!isLlmMenuOpen)}
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-medium text-gray-700">Model: {getCurrentLlm().name}</span>
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isLlmMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 animate-fade-in">
+                    <div className="px-3 py-2 border-b border-gray-100">
+                      <p className="text-xs font-medium text-gray-500">SELECT MODEL</p>
+                    </div>
+                    
+                    {llmModels.map(model => (
+                      <button
+                        key={model.id}
+                        onClick={() => changeLlm(model.id)}
+                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                          llm === model.id ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{model.name}</p>
+                          <p className="text-xs text-gray-500">{model.description}</p>
+                        </div>
+                        {llm === model.id && (
+                          <div className="ml-auto">
+                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               {/* Character Selector Dropdown */}
               <div className="relative" ref={characterMenuRef}>
                 <button 
@@ -735,19 +820,15 @@ const ChatBot = () => {
                 {isCharacterMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 animate-fade-in max-h-96 overflow-y-auto">
                     <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-xs font-medium text-gray-500">SELECT AI PERSONALITY</p>
+                      <p className="text-xs font-medium text-gray-500">SELECT WEB3 EXPERT</p>
                     </div>
                     
-                    {/* General Characters */}
-                    <div className="px-3 py-1 border-b border-gray-100">
-                      <p className="text-xs font-medium text-gray-400">General</p>
-                    </div>
-                    {characters.filter(c => !['doctor', 'nutritionist', 'therapist', 'nurse', 'researcher'].includes(c.id)).map(char => (
+                    {characters.map(char => (
                       <button
                         key={char.id}
                         onClick={() => changeCharacter(char.id)}
                         className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                          character === char.id ? 'bg-blue-50' : ''
+                          character === char.id ? 'bg-indigo-50' : ''
                         }`}
                       >
                         <span className="text-xl">{char.emoji}</span>
@@ -757,32 +838,7 @@ const ChatBot = () => {
                         </div>
                         {character === char.id && (
                           <div className="ml-auto">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                    
-                    {/* Medical Characters */}
-                    <div className="px-3 py-1 border-b border-gray-100 mt-1">
-                      <p className="text-xs font-medium text-gray-400">Medical Experts</p>
-                    </div>
-                    {characters.filter(c => ['doctor', 'nutritionist', 'therapist', 'nurse', 'researcher'].includes(c.id)).map(char => (
-                      <button
-                        key={char.id}
-                        onClick={() => changeCharacter(char.id)}
-                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                          character === char.id ? 'bg-blue-50' : ''
-                        }`}
-                      >
-                        <span className="text-xl">{char.emoji}</span>
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">{char.name}</p>
-                          <p className="text-xs text-gray-500">{char.description}</p>
-                        </div>
-                        {character === char.id && (
-                          <div className="ml-auto">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
                           </div>
                         )}
                       </button>
@@ -794,7 +850,7 @@ const ChatBot = () => {
               {!isOcrReady && !isOcrLoading && (
                 <button
                   onClick={retryOcrInitialization}
-                  className="text-sm text-blue-500 hover:text-blue-700 transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-blue-50"
+                  className="text-sm text-indigo-500 hover:text-indigo-700 transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
                 >
                   <BsArrowRepeat className="text-sm" />
                   <span>Retry OCR</span>
@@ -816,12 +872,12 @@ const ChatBot = () => {
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
             {messages.length === 0 && !isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-6 shadow-lg">
                   <span className="text-4xl">{getCurrentCharacter().emoji}</span>
                 </div>
-                <p className="text-xl font-medium text-gray-700 mb-2">I'm {getCurrentCharacter().name}!</p>
+                <p className="text-xl font-medium text-gray-700 mb-2">I'm your {getCurrentCharacter().name}!</p>
                 <p className="text-sm text-gray-500 max-w-md text-center">
-                  {getCurrentCharacter().description}. Ask me anything by sending a message below.
+                  {getCurrentCharacter().description}. Ask me anything about blockchain, crypto, and web3 technologies.
                 </p>
               </div>
             )}
@@ -844,9 +900,9 @@ const ChatBot = () => {
                     </>
                   ) : (
                     <>
-                      {/* Show character indicator for bot messages */}
-                      {msg.character && (
-                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
+                      {/* Show character and always show LLM indicator for bot messages */}
+                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-2">
                           <span className="text-lg">
                             {characters.find(c => c.id === msg.character)?.emoji || '🤖'}
                           </span>
@@ -854,7 +910,16 @@ const ChatBot = () => {
                             {characters.find(c => c.id === msg.character)?.name || 'Assistant'}
                           </span>
                         </div>
-                      )}
+                        {/* Always show model badge with appropriate styling */}
+                        <span className={`text-xs ${
+                          msg.llm === '0g' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-blue-100 text-blue-800'
+                          } px-2 py-0.5 rounded-full font-medium`}
+                        >
+                          {msg.llm === '0g' ? '0G Model' : 'Nilai Model'}
+                        </span>
+                      </div>
                       <div 
                         className="" 
                         dangerouslySetInnerHTML={{ __html: msg.text }}
@@ -894,10 +959,21 @@ const ChatBot = () => {
             {streamingText && (
               <div className="flex justify-start animate-fade-in">
                 <div className="max-w-[80%] p-4 rounded-2xl bg-white text-gray-800 rounded-bl-none shadow-md border border-gray-100">
-                  {/* Character indicator for streaming message */}
-                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
-                    <span className="text-lg">{getCurrentCharacter().emoji}</span>
-                    <span className="text-xs text-gray-500 font-medium">{getCurrentCharacter().name}</span>
+                  {/* Character and model indicator for streaming message */}
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{getCurrentCharacter().emoji}</span>
+                      <span className="text-xs text-gray-500 font-medium">{getCurrentCharacter().name}</span>
+                    </div>
+                    {/* Always show model badge with appropriate styling */}
+                    <span className={`text-xs ${
+                      llm === '0g' 
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-blue-100 text-blue-800'
+                      } px-2 py-0.5 rounded-full font-medium`}
+                    >
+                      {llm === '0g' ? '0G Model' : 'Nilai Model'}
+                    </span>
                   </div>
                   <div 
                     className="whitespace-pre-wrap leading-relaxed" 
