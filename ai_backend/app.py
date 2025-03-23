@@ -6,6 +6,7 @@ import string
 from LLM.Nilai import NillionLLM, OGLLM
 from helpers import get_web3_prompt
 from api_handler import create_coin, buy_coin
+
 app = Flask(__name__)
 CORS(app)
 
@@ -20,6 +21,11 @@ def generate_random_id(length=20):
 def chat():
     query = request.args.get('query')
     llm = request.args.get('llm')
+
+    if not query:
+        return Response("Error: Query parameter is required", status=400, content_type="text/plain")
+
+    # Determine which LLM to use based on the 'llm' parameter
     if llm == "0g":
         llm = OGLLM(
             model="og-basic",
@@ -32,23 +38,18 @@ def chat():
             top_p=0.95,
             max_tokens=2048
         )
-        
-    print(query)
+
     conversation_id = request.args.get('conversation_id')
-    character = request.args.get('character', 'blockchain-advisor')
-
-    if not query:
-        return Response("Error: Query parameter is required", status=400, content_type="text/plain")
-
     if not conversation_id:
         conversation_id = generate_random_id()
 
+    # Handle conversation history
     if conversation_id not in conversation_history:
-        # Use our new web3 prompt function instead of the previous one
-        web3_prompt = get_web3_prompt(character)
-        
-        # Add the UI formatting instructions
-        web3_prompt = web3_prompt + '''
+        # Use the Web3 prompt generator
+        web3_prompt = get_web3_prompt(request.args.get('character', 'blockchain-advisor'))
+
+        # Add detailed UI formatting instructions
+        web3_prompt += '''
         Important UI formatting instructions:
              - Don't use white color for the text. Use black color for the text.
              - Generate clean, visually appealing HTML for a chat bubble UI response using Tailwind CSS.
@@ -65,89 +66,60 @@ def chat():
              - Add a 🔗 emoji before links in lists, and style links in a contrasting color.
              - Format code examples with appropriate syntax highlighting when relevant.
         '''
-        
-        web3_prompt = web3_prompt + """
+
+        web3_prompt += """
         Very important agent actions:
+
+        Token creation or coin creation or token launch:
+         - If the user asks to create a meme coin, then ask for the name of the coin, the symbol of the coin, and the initialSupply of the coin.
+         - If the user provides the details of the coins, then add the keyword in your response: ~newcoincreaterequest#value1#value2#value3~.
         
-        Tocken creation or coin creation or token launch:
-         - if the user ask to create a meme coin, then ask for the name of the coin and the symbol of the coin and initialSupply of the coin. 
-         - if the user also given the details of the coins. then add the keyword in your response. of  
-         ~newcoincreaterequest#value1#value2#value3~ the following of that user selected that three thing respectively and send the response to the user.
-        
-        
-        if user ask for meme coin, to buy then based on following data list it out to the user and ask select anything.
-        data:
+        If the user asks for a meme coin to buy, list the following coins and ask the user to select one:
         - Dogecoin
         - Shiba Inu
         - Pepe
         - Banana
         - Cat
-        
-        once user selected showw message the coin added your account successfully.
-        
-        if the user ask to sell the coin then based on following data list it out to the user and ask select anything.
-        data:
-        - Dogecoin
-        - Shiba Inu
-        - Pepe
-        - Banana
-        - Cat
-        
-        once the user select any of the coin then show message the coin sell request sent successfully.
-        
-        once the user select any of the coin then ask for the amount of coin to buy.
-        
-        
+
+        Once the user selects, show a message that the coin has been added to their account.
+
+        If the user asks to sell a coin, list the same coins and ask for a selection.
+        Once the user selects a coin, show a message that the sell request has been sent successfully.
         """
         
-        print(web3_prompt)
-        conversation_history[conversation_id] = [
-            SystemMessage(content=web3_prompt)
-        ]
+        conversation_history[conversation_id] = [SystemMessage(content=web3_prompt)]
 
+    # Add the user's message to conversation history
     conversation_history[conversation_id].append(HumanMessage(content=query))
 
-    # Fix: The LLM expects a string prompt, not a list of messages
+    # Get the response from the LLM
     if llm == "0g":
-        # The OGLLM might have its own way to handle message lists, so we need to check
-        # For now, let's extract just the latest message content
         response = llm(query)
     else:
-        # For NillionLLM, use the invoke method which properly handles message lists
         response = llm.invoke(conversation_history[conversation_id])
-    
-    # If response is an object with content attribute, extract the content
-    if hasattr(response, 'content'):
-        response_text = response.content
-    else:
-        response_text = str(response)
-    
+
+    # Extract the content of the response if it's an object
+    response_text = response.content if hasattr(response, 'content') else str(response)
+
+    # Handle new coin creation request
     if "newcoincreaterequest" in response_text:
-        print("newcoincreaterequest exists \n\n\nn\n")
         coin_name = response_text.split("#")[2]
         coin_symbol = response_text.split("#")[3]
         coin_initial_supply = response_text.split("#")[4].split("~")[0]
-        print("\n\n\n\n\n\n")
-        print(coin_name, coin_symbol, coin_initial_supply)
-        print("\n\n\n\n\n\n")
+
+        # Create the coin and send a confirmation message to the user
         out = create_coin(coin_name, coin_symbol, coin_initial_supply)
-        print(out)
-        print("\n\n\n\n\n\n")
-        response_text = llm.invoke(str(out) + "coin created successfully so ack the user about it.")
-    
-    
-    # Add AI message to conversation history
+        response_text = llm.invoke(f"{str(out)} coin created successfully, so acknowledge the user about it.")
+
+    # Add the AI response to conversation history
     conversation_history[conversation_id].append(AIMessage(content=response_text))
-    
-    # Return a regular response instead of streaming
+
+    # Return the response as a plain text
     return Response(response_text, content_type="text/plain")
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """
-    Health check endpoint to verify the service is up and running.
-    Returns a 200 OK response with a simple message.
-    """
+    """ Health check endpoint to verify the service is up and running. """
     return Response("OK", status=200, content_type="text/plain")
 
 if __name__ == '__main__':
