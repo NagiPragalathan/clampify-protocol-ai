@@ -50,7 +50,7 @@ def chat():
              - Ensure the text is easy to read and visually engaging.
              - Include appropriate blockchain/crypto-related emojis to enhance the chat experience.
              - If any URLs are present, make them clickable and styled properly (without showing the raw URL).
-             - Use blockchain-appropriate styling (gradients in blues/purples for emphasis, code blocks for technical content).
+             - Use blockchain-appropriate styling #ffae5c for bg of bubble of the chat.
              - The UI should be responsive and look good on both desktop and mobile devices.
              - Avoid adding any unnecessary line spaces or elements outside of the chat bubble format.
              - Don't add any line spaces in the first line of the response and all of the lines.

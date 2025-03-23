@@ -970,18 +970,18 @@ const ChatBot = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-gray-900 to-black">
       <div className="w-full max-w-4xl mx-auto p-4 flex flex-col h-full">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl flex flex-col flex-1 overflow-hidden mt-10 border border-gray-100">
+        <div className="bg-[#ffae5c]/5 backdrop-blur-sm rounded-2xl shadow-xl flex flex-col flex-1 overflow-hidden mt-10 border border-[#ffae5c]/20">
           {/* Header with Character Selector and LLM Model Selector */}
-          <div className="flex justify-between items-center p-4 border-b bg-white/50 backdrop-blur-sm">
+          <div className="z-55 flex justify-between items-center p-4 border-b border-[#ffae5c]/20 bg-black/30 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ffae5c] to-[#4834D4] flex items-center justify-center shadow-lg">
                 <BsChatDots className="text-xl text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-800">Web3 Assistant</h1>
-                <p className="text-xs text-gray-500">Your blockchain knowledge companion</p>
+                <h1 className="text-xl font-semibold text-white">Web3 Assistant</h1>
+                <p className="text-xs text-white/50">Your blockchain knowledge companion</p>
               </div>
             </div>
             
@@ -990,35 +990,35 @@ const ChatBot = () => {
               <div className="relative" ref={llmMenuRef}>
                 <button 
                   onClick={() => setIsLlmMenuOpen(!isLlmMenuOpen)}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 bg-black/30 border border-[#ffae5c]/20 rounded-lg flex items-center gap-2 hover:bg-[#ffae5c]/10 transition-colors"
                 >
-                  <span className="text-sm font-medium text-gray-700">Model: {getCurrentLlm().name}</span>
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="text-sm font-medium text-white">Model: {getCurrentLlm().name}</span>
+                  <svg className="w-4 h-4 text-[#ffae5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
                 {isLlmMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 animate-fade-in">
-                    <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-xs font-medium text-gray-500">SELECT MODEL</p>
+                  <div className="absolute right-0 mt-2 w-64 bg-black/80 rounded-lg shadow-lg border border-[#ffae5c]/20 py-2 z-10 animate-fade-in backdrop-blur-sm">
+                    <div className="px-3 py-2 border-b border-[#ffae5c]/10">
+                      <p className="text-xs font-medium text-[#ffae5c]/70">SELECT MODEL</p>
                     </div>
                     
                     {llmModels.map(model => (
                       <button
                         key={model.id}
                         onClick={() => changeLlm(model.id)}
-                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                          llm === model.id ? 'bg-blue-50' : ''
+                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#ffae5c]/10 transition-colors ${
+                          llm === model.id ? 'bg-[#ffae5c]/20' : ''
                         }`}
                       >
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{model.name}</p>
-                          <p className="text-xs text-gray-500">{model.description}</p>
+                          <p className="text-sm font-medium text-white">{model.name}</p>
+                          <p className="text-xs text-white/50">{model.description}</p>
                         </div>
                         {llm === model.id && (
                           <div className="ml-auto">
-                            <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-[#ffae5c]"></div>
                           </div>
                         )}
                       </button>
@@ -1031,37 +1031,37 @@ const ChatBot = () => {
               <div className="relative" ref={characterMenuRef}>
                 <button 
                   onClick={() => setIsCharacterMenuOpen(!isCharacterMenuOpen)}
-                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 bg-black/30 border border-[#ffae5c]/20 rounded-lg flex items-center gap-2 hover:bg-[#ffae5c]/10 transition-colors"
                 >
                   <span className="text-lg">{getCurrentCharacter().emoji}</span>
-                  <span className="text-sm font-medium text-gray-700">{getCurrentCharacter().name}</span>
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="text-sm font-medium text-white">{getCurrentCharacter().name}</span>
+                  <svg className="w-4 h-4 text-[#ffae5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
                 {isCharacterMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 animate-fade-in max-h-96 overflow-y-auto">
-                    <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-xs font-medium text-gray-500">SELECT WEB3 EXPERT</p>
+                  <div className="!z-55 absolute right-0 mt-2 w-64 bg-black/80 rounded-lg shadow-lg border border-[#ffae5c]/20 py-2 z-10 animate-fade-in max-h-96 overflow-y-auto backdrop-blur-sm">
+                    <div className="px-3 py-2 border-b border-[#ffae5c]/10">
+                      <p className="text-xs font-medium text-[#ffae5c]/70">SELECT WEB3 EXPERT</p>
                     </div>
                     
                     {characters.map(char => (
                       <button
                         key={char.id}
                         onClick={() => changeCharacter(char.id)}
-                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                          character === char.id ? 'bg-indigo-50' : ''
+                        className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#ffae5c]/10 transition-colors ${
+                          character === char.id ? 'bg-[#ffae5c]/20' : ''
                         }`}
                       >
                         <span className="text-xl">{char.emoji}</span>
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{char.name}</p>
-                          <p className="text-xs text-gray-500">{char.description}</p>
+                          <p className="text-sm font-medium text-white">{char.name}</p>
+                          <p className="text-xs text-white/50">{char.description}</p>
                         </div>
                         {character === char.id && (
                           <div className="ml-auto">
-                            <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
+                            <div className="h-2 w-2 rounded-full bg-[#ffae5c]"></div>
                           </div>
                         )}
                       </button>
@@ -1073,7 +1073,7 @@ const ChatBot = () => {
               {!isOcrReady && !isOcrLoading && (
                 <button
                   onClick={retryOcrInitialization}
-                  className="text-sm text-indigo-500 hover:text-indigo-700 transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
+                  className="text-sm text-[#ffae5c] hover:text-[#ffae5c]/80 transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-[#ffae5c]/10"
                 >
                   <BsArrowRepeat className="text-sm" />
                   <span>Retry OCR</span>
@@ -1082,7 +1082,7 @@ const ChatBot = () => {
               {messages.length > 0 && (
                 <button
                   onClick={clearChat}
-                  className="text-sm text-red-500 hover:text-red-700 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-red-50"
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-red-500/10"
                 >
                   <BsTrash className="text-sm" />
                   <span>Clear Chat</span>
@@ -1092,14 +1092,14 @@ const ChatBot = () => {
           </div>
 
           {/* Chat Messages - Display character emoji with bot messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-black/50 to-black/30">
             {messages.length === 0 && !isLoading && (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-6 shadow-lg">
+              <div className="flex flex-col items-center justify-center h-full text-white/50">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#ffae5c]/20 to-[#4834D4]/20 flex items-center justify-center mb-6 shadow-lg">
                   <span className="text-4xl">{getCurrentCharacter().emoji}</span>
                 </div>
-                <p className="text-xl font-medium text-gray-700 mb-2">I'm your {getCurrentCharacter().name}!</p>
-                <p className="text-sm text-gray-500 max-w-md text-center">
+                <p className="text-xl font-medium text-white mb-2">I'm your {getCurrentCharacter().name}!</p>
+                <p className="text-sm text-white/60 max-w-md text-center">
                   {getCurrentCharacter().description}. Ask me anything about blockchain, crypto, and web3 technologies.
                 </p>
               </div>
@@ -1112,8 +1112,8 @@ const ChatBot = () => {
                 <div
                   className={`max-w-[80%] p-4 rounded-2xl ${
                     msg.sender === 'user' 
-                      ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none' 
-                      : 'bg-white text-gray-800 rounded-bl-none shadow-md border border-gray-100'
+                      ? 'bg-gradient-to-br from-[#ffae5c] to-[#4834D4] text-white rounded-br-none' 
+                      : 'bg-[#ffae5c]/5 text-white/90 rounded-bl-none shadow-md border border-[#ffae5c]/20 backdrop-blur-sm'
                   }`}
                 >
                   {msg.sender === 'user' ? (
@@ -1124,20 +1124,20 @@ const ChatBot = () => {
                   ) : (
                     <>
                       {/* Show character and always show LLM indicator for bot messages */}
-                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#ffae5c]/10">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">
                             {characters.find(c => c.id === msg.character)?.emoji || '🤖'}
                           </span>
-                          <span className="text-xs text-gray-500 font-medium">
+                          <span className="text-xs text-white/60 font-medium">
                             {characters.find(c => c.id === msg.character)?.name || 'Assistant'}
                           </span>
                         </div>
                         {/* Always show model badge with appropriate styling */}
                         <span className={`text-xs ${
                           msg.llm === '0g' 
-                            ? 'bg-purple-100 text-purple-800' 
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-[#4834D4]/20 text-[#4834D4]/90' 
+                            : 'bg-[#ffae5c]/20 text-[#ffae5c]/90'
                           } px-2 py-0.5 rounded-full font-medium`}
                         >
                           {msg.llm === '0g' ? '0G Model' : 'Nilai Model'}
@@ -1150,27 +1150,27 @@ const ChatBot = () => {
                     </>
                   )}
                   <div className="flex items-center justify-between mt-2">
-                    <span className={`text-xs ${msg.sender === 'user' ? 'opacity-70' : 'text-gray-500'}`}>
+                    <span className={`text-xs ${msg.sender === 'user' ? 'opacity-70' : 'text-white/50'}`}>
                       {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                     {msg.sender === 'bot' && (
                       <div className="flex gap-2">
                         <button
                           onClick={() => speakText(msg.text)}
-                          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                          className="p-1 hover:bg-[#ffae5c]/10 rounded-full transition-colors"
                         >
                           {isSpeaking ? 
-                            <HiSpeakerXMark className="text-gray-500 w-4 h-4" /> :
-                            <HiSpeakerWave className="text-gray-500 w-4 h-4" />
+                            <HiSpeakerXMark className="text-white/70 w-4 h-4" /> :
+                            <HiSpeakerWave className="text-white/70 w-4 h-4" />
                           }
                         </button>
                         {index === messages.length - 1 && msg.sender === 'bot' && (
                           <button
                             onClick={regenerateResponse}
                             disabled={isLoading}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-[#ffae5c]/10 rounded-full transition-colors"
                           >
-                            <BsArrowRepeat className={`w-4 h-4 text-gray-500 ${isLoading ? 'animate-spin' : ''}`} />
+                            <BsArrowRepeat className={`w-4 h-4 text-white/70 ${isLoading ? 'animate-spin' : ''}`} />
                           </button>
                         )}
                       </div>
@@ -1181,18 +1181,18 @@ const ChatBot = () => {
             ))}
             {streamingText && (
               <div className="flex justify-start animate-fade-in">
-                <div className="max-w-[80%] p-4 rounded-2xl bg-white text-gray-800 rounded-bl-none shadow-md border border-gray-100">
+                <div className="max-w-[80%] p-4 rounded-2xl bg-[#ffae5c]/5 text-white/90 rounded-bl-none shadow-md border border-[#ffae5c]/20 backdrop-blur-sm">
                   {/* Character and model indicator for streaming message */}
-                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#ffae5c]/10">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{getCurrentCharacter().emoji}</span>
-                      <span className="text-xs text-gray-500 font-medium">{getCurrentCharacter().name}</span>
+                      <span className="text-xs text-white/60 font-medium">{getCurrentCharacter().name}</span>
                     </div>
                     {/* Always show model badge with appropriate styling */}
                     <span className={`text-xs ${
                       llm === '0g' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-[#4834D4]/20 text-[#4834D4]/90' 
+                        : 'bg-[#ffae5c]/20 text-[#ffae5c]/90'
                       } px-2 py-0.5 rounded-full font-medium`}
                     >
                       {llm === '0g' ? '0G Model' : 'Nilai Model'}
@@ -1205,27 +1205,27 @@ const ChatBot = () => {
                   <div className="flex items-center mt-3">
                     {/* Enhanced typing indicator with progress */}
                     <div className="typing-indicator">
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                      <span className="dot"></span>
+                      <span className="dot bg-[#ffae5c]"></span>
+                      <span className="dot bg-[#ffae5c]"></span>
+                      <span className="dot bg-[#ffae5c]"></span>
                     </div>
-                    <span className="text-xs text-gray-500 ml-2">
+                    <span className="text-xs text-white/60 ml-2">
                       {responseProgress > 5 
                         ? `Generating response (${Math.round(responseProgress)}%)...` 
                         : <span className="thinking-text">Thinking</span>}
                     </span>
-                    
-                    {/* Progress bar */}
-                    <div className="w-full h-1 bg-gray-200 rounded-full mt-2 overflow-hidden">
-                      {responseProgress <= 5 ? (
-                        <div className="indeterminate-progress-bar"></div>
-                      ) : (
-                        <div 
-                          className="h-full via-blue-500 transition-all duration-300 ease-out" 
-                          style={{ width: `${responseProgress}%` }}
-                        ></div>
-                      )}
-                    </div>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="w-full h-1 bg-[#ffae5c]/10 rounded-full mt-2 overflow-hidden">
+                    {responseProgress <= 5 ? (
+                      <div className="indeterminate-progress-bar"></div>
+                    ) : (
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#ffae5c] to-[#4834D4] transition-all duration-300 ease-out" 
+                        style={{ width: `${responseProgress}%` }}
+                      ></div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1234,23 +1234,23 @@ const ChatBot = () => {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-white/50 backdrop-blur-sm border-t">
+          <div className="p-4 bg-black/60 backdrop-blur-sm border-t border-[#ffae5c]/20">
             {/* File Preview (WhatsApp-style) */}
             {fileInfo && (
-              <div className="mb-3 p-3 bg-blue-50 rounded-xl border border-blue-100 relative animate-slide-up">
+              <div className="mb-3 p-3 bg-[#ffae5c]/5 rounded-xl border border-[#ffae5c]/20 relative animate-slide-up">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                  <div className="w-12 h-12 bg-[#ffae5c]/10 rounded-lg flex items-center justify-center text-[#ffae5c] flex-shrink-0">
                     {fileInfo.type === 'image' && <span className="text-xl">📷</span>}
                     {fileInfo.type === 'pdf' && <span className="text-xl">📄</span>}
                     {fileInfo.type === 'text' && <span className="text-xl">📝</span>}
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <div className="font-medium text-blue-800 truncate">{fileInfo.name}</div>
-                    <div className="text-xs text-blue-500">
+                    <div className="font-medium text-white truncate">{fileInfo.name}</div>
+                    <div className="text-xs text-white/60">
                       {fileInfo.type === 'image' ? 'Image' : fileInfo.type === 'pdf' ? 'PDF Document' : 'Text File'} • {fileInfo.size} KB
-                      {fileInfo.error && <span className="ml-2 text-yellow-600">⚠️ Processing had issues</span>}
+                      {fileInfo.error && <span className="ml-2 text-yellow-500">⚠️ Processing had issues</span>}
                     </div>
-                    <div className="text-xs text-blue-700 mt-1 line-clamp-1">
+                    <div className="text-xs text-white/70 mt-1 line-clamp-1">
                       {fileContent ? 
                         (fileContent.length > 60 ? fileContent.substring(0, 60) + '...' : fileContent) 
                         : 'No text extracted'}
@@ -1258,7 +1258,7 @@ const ChatBot = () => {
                   </div>
                   <button 
                     onClick={clearFileAttachment}
-                    className="absolute top-2 right-2 h-5 w-5 rounded-full bg-blue-200 flex items-center justify-center text-blue-800 hover:bg-blue-300"
+                    className="absolute top-2 right-2 h-5 w-5 rounded-full bg-[#ffae5c]/20 flex items-center justify-center text-white hover:bg-[#ffae5c]/30"
                   >
                     <BsX className="text-sm" />
                   </button>
@@ -1281,7 +1281,7 @@ const ChatBot = () => {
                 className={`p-4 rounded-xl transition-all duration-200 ${
                   isListening
                     ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    : "bg-[#ffae5c]/5 hover:bg-[#ffae5c]/10 text-white/80 border border-[#ffae5c]/20"
                 }`}
               >
                 {isListening ? <MdOutlineStop className="text-xl" /> : <MdOutlineMic className="text-xl" />}
@@ -1293,8 +1293,8 @@ const ChatBot = () => {
                 disabled={isProcessingFile}
                 className={`p-4 rounded-xl transition-all duration-200 relative ${
                   isProcessingFile
-                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    ? "bg-gray-800 cursor-not-allowed text-gray-500 border border-gray-700"
+                    : "bg-[#ffae5c]/5 hover:bg-[#ffae5c]/10 text-white/80 border border-[#ffae5c]/20"
                 }`}
                 title={getFileButtonTitle()}
               >
@@ -1302,9 +1302,9 @@ const ChatBot = () => {
                 {isOcrLoading && <span className="absolute -top-1 -right-1 h-3 w-3 bg-yellow-500 rounded-full animate-pulse"></span>}
                 {!isOcrReady && !isOcrLoading && <span className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full"></span>}
                 {isProcessingFile && (
-                  <div className="absolute -bottom-1 left-0 w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="absolute -bottom-1 left-0 w-full h-1 bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-500 transition-all duration-300" 
+                      className="h-full bg-gradient-to-r from-[#ffae5c] to-[#4834D4] transition-all duration-300" 
                       style={{ width: `${ocrProgress}%` }}
                     ></div>
                   </div>
@@ -1324,7 +1324,7 @@ const ChatBot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
-                className="flex-1 p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white placeholder:text-gray-400 bg-white/80 backdrop-blur-sm"
+                className="flex-1 p-4 border border-[#ffae5c]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ffae5c] focus:ring-offset-2 focus:ring-offset-black placeholder:text-white/40 bg-[#ffae5c]/5 backdrop-blur-sm text-white"
                 placeholder={
                   isListening ? "Listening..." : 
                   isProcessingFile ? `Processing file (${ocrProgress}%)...` : 
@@ -1341,8 +1341,8 @@ const ChatBot = () => {
                 disabled={(!input.trim() && !fileInfo) || isLoading || isProcessingFile}
                 className={`p-4 rounded-xl text-white transition-all duration-200 ${
                   (input.trim() || fileInfo) && !isLoading && !isProcessingFile
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:from-blue-700 active:to-blue-800 shadow-lg hover:shadow-xl"
-                    : "bg-gray-300 cursor-not-allowed"
+                    ? "bg-gradient-to-br from-[#ffae5c] to-[#4834D4] hover:opacity-90 active:opacity-80 shadow-lg hover:shadow-xl"
+                    : "bg-gray-800 cursor-not-allowed border border-gray-700"
                 }`}
               >
                 {isLoading ? (
@@ -1356,17 +1356,17 @@ const ChatBot = () => {
             {/* Show loading bar at bottom when processing */}
             {isLoading && (
               <div className="mt-2 w-full">
-                <div className="text-xs text-center text-gray-500 mb-1">
+                <div className="text-xs text-center text-white/60 mb-1">
                   {responseProgress > 5 
                     ? `Generating response (${Math.round(responseProgress)}%)...` 
                     : <span className="thinking-text shimmer-effect">Preparing your response</span>}
                 </div>
-                <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-[#ffae5c]/10 rounded-full overflow-hidden">
                   {responseProgress <= 5 ? (
                     <div className="indeterminate-progress-bar"></div>
                   ) : (
                     <div 
-                      className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 transition-all duration-300 ease-out" 
+                      className="h-full bg-gradient-to-r from-[#ffae5c] via-[#bf8247] to-[#4834D4] transition-all duration-300 ease-out" 
                       style={{ width: `${responseProgress}%` }}
                     ></div>
                   )}
